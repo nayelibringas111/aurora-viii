@@ -1,0 +1,42 @@
+# Render Blueprint de Aurora VIII (API + worker). El frontend va en Vercel y la base de datos en Supabase.
+# Dashboard de Render → New → Blueprint → elige este repositorio. Los valores sync:false se piden al crear.
+services:
+  - type: web
+    name: aurora-viii-api
+    runtime: docker
+    dockerfilePath: ./infra/docker/api.Dockerfile
+    dockerContext: .
+    plan: free              # o 0.5c-512mb (sin suspensión por inactividad)
+    region: oregon          # usa la región más cercana a tu proyecto de Supabase
+    healthCheckPath: /healthz
+    buildFilter:
+      paths: [services/api/**, workers/training/**, infra/**]
+    envVars:
+      - { key: ENVIRONMENT, value: prod }
+      - { key: AUTH_MODE, value: supabase }
+      - { key: STORAGE_BACKEND, value: supabase }
+      - { key: STORAGE_BUCKET, value: aurora-viii }
+      - { key: RUN_WORKER_IN_PROCESS, value: "false" }
+      - { key: DATABASE_URL, sync: false }
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SECRET_KEY, sync: false }
+      - { key: CORS_ORIGINS, sync: false }
+      - { key: CORS_ORIGIN_REGEX, sync: false }
+      - { key: BOOTSTRAP_ADMIN_EMAILS, sync: false }
+
+  - type: worker
+    name: aurora-viii-worker
+    runtime: docker
+    dockerfilePath: ./infra/docker/worker.Dockerfile
+    dockerContext: .
+    plan: 1c-2g             # TensorFlow necesita ~1 GB; 512 MB no alcanza
+    region: oregon
+    buildFilter:
+      paths: [services/api/**, workers/training/**, infra/**]
+    envVars:
+      - { key: ENVIRONMENT, value: prod }
+      - { key: STORAGE_BACKEND, value: supabase }
+      - { key: STORAGE_BUCKET, value: aurora-viii }
+      - { key: DATABASE_URL, sync: false }
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SECRET_KEY, sync: false }

@@ -1,0 +1,41 @@
+# Entorno local completo: PostgreSQL + API + worker TensorFlow + frontend (Vite).
+#   docker compose up --build    →  http://localhost:5173
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: aurora, POSTGRES_PASSWORD: aurora, POSTGRES_DB: aurora }
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U aurora"], interval: 3s, retries: 20 }
+
+  api:
+    build: { context: ., dockerfile: infra/docker/api.Dockerfile }
+    environment: &env
+      DATABASE_URL: postgresql://aurora:aurora@db:5432/aurora
+      ENVIRONMENT: dev
+      AUTH_MODE: local
+      STORAGE_BACKEND: local
+      STORAGE_LOCAL_DIR: /data/storage
+      CORS_ORIGINS: http://localhost:5173
+    volumes: [storage:/data/storage]
+    ports: ["8000:8000"]
+    depends_on: { db: { condition: service_healthy } }
+    user: root
+
+  worker:
+    build: { context: ., dockerfile: infra/docker/worker.Dockerfile }
+    environment: *env
+    volumes: [storage:/data/storage]
+    depends_on: { db: { condition: service_healthy } }
+    user: root
+
+  web:
+    image: node:22-alpine
+    working_dir: /web
+    command: sh -c "npm ci && npx vite --host 0.0.0.0 --port 5173"
+    environment: { VITE_API_URL: http://localhost:8000 }
+    volumes: [./apps/web:/web, webmodules:/web/node_modules]
+    ports: ["5173:5173"]
+    depends_on: [api]
+
+volumes: { pgdata: {}, storage: {}, webmodules: {} }

@@ -1,0 +1,2 @@
+# TensorFlow solo en CPU (más liviano). Para GPU, usa tensorflow[and-cuda] en una imagen con CUDA.
+tensorflow-cpu==2.21.*
