@@ -1,4 +1,4 @@
-# Aurora VIII
+# Aurora VIII :)
 
 Plataforma enterprise para **diseñar, entrenar, evaluar, versionar y observar redes neuronales artificiales**.
 Implementa el *Documento Maestro de Desarrollo* (NeuroLab Enterprise v1.0) sobre las operaciones de la
