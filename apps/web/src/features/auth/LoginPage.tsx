@@ -82,7 +82,7 @@ export function LoginPage() {
           {mode === "local" && <p className="small muted" style={{ margin: 0 }}>Modo de desarrollo: no requiere contraseña. En producción la API usa Supabase Auth.</p>}
           <ErrorBox error={err} />
           {info && <div className="alert alert-info">{info}</div>}
-          <button className="btn btn-primary" disabled={busy || !mode}>{busy ? "Un momento…" : tab === "up" && mode === "supabase" ? "Crear cuenta" : "Ingresar"}</button>
+          <button className="btn btn-primary" disabled={busy}>{busy ? "Un momento…" : tab === "up" && mode === "supabase" ? "Crear cuenta" : "Ingresar"}</button>
         </form>
       </div>
     </div>
